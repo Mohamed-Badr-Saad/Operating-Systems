@@ -1,0 +1,210 @@
+//---Main.cpp----//
+
+ #include <iostream>
+#include <sstream>
+#include "dispatcher.hpp"
+#include "prompt.hpp"
+#define bufferLength 99
+using namespace std;
+
+int main(int argc, char *argv[]) {
+  if (argc > 1) {
+    for (int i = 0; i < argc; i++) {
+      argv[i] = argv[i + 1];
+    }
+    dispatcher(argc, argv);
+    wait(NULL);
+  }
+  char username[bufferLength];
+  char hostname[bufferLength];
+  char cwd[bufferLength];
+  cuserid(username);
+  gethostname(hostname, bufferLength);
+  getcwd(cwd, bufferLength);
+  string userInput;
+  string token;
+  string argsVector[bufferLength];
+  char *args[bufferLength];
+  int arraySize;
+  
+while (1) {
+    // clearing
+    userInput.clear();
+    token.clear();
+    arraySize = 0;
+    for (int i = 0; i < bufferLength; i++) {
+      argsVector[i].clear();
+      args[i] = NULL;
+    }
+    // prompting
+    do {
+      userInput = prompt(username, hostname, cwd);
+    } while (userInput.empty() || isspace(userInput.at(0)));
+    // string splitting
+    stringstream stream(userInput);
+    while (stream >> token) {
+      argsVector[arraySize] = token;
+      args[arraySize] = (char *)argsVector[arraySize].c_str();
+      arraySize++;
+    }
+    // actual processing
+    if (string(args[0]) == "exit" || string(args[0]) == "quit") {
+      terminator(SIGQUIT);
+    } else {
+      dispatcher(arraySize + 1, args, cwd);
+      wait(NULL);
+    }
+  }
+}
+//---Prompt.hpp:---//
+
+#ifndef PROMPT
+#define PROMPT
+#include <iostream>
+using namespace std;
+
+string prompt(char *username, char *hostname, char *cwd) {
+  string userInput;
+  string cwdString = string(cwd);
+  string replaceString = "/home/" + string(username);
+
+  if (cwdString.find(replaceString) < cwdString.length())
+    cwdString.replace(0, replaceString.length(), "~");
+
+  cout << username << "@" << hostname << " " << cwdString << " => ";
+  getline(cin, userInput);
+  if (cin.eof())
+    return "logout";
+  return userInput;
+}
+#endif
+
+
+
+
+
+//---CD.hpp:---//
+
+#ifndef CD
+#define CD
+#include <string.h>
+#include <unistd.h>
+
+#include <iostream>
+#ifndef bufferLength
+#define bufferLength 99
+#endif
+
+using namespace std;
+
+void cd(int argc, char *args[], char *cwd) {
+  if (argc == 2) {
+    chdir(getenv("HOME"));
+  } else {
+    if (string(args[1]) == "~")
+      chdir(getenv("HOME"));
+    else
+      chdir(args[1]);
+  }
+  getcwd(cwd, bufferLength);
+}
+#endif
+
+
+//---Dispatcher.hpp:---//
+
+#ifndef DISPATCHER
+#define DISPATCHER
+#include <string.h>
+#include <unistd.h>
+#include <iostream>
+
+#include "cd.hpp"
+#include "terminator.hpp"
+
+typedef pid_t pid;
+using namespace std;
+
+void dispatcher(int argc, char* argv[], char* cwd = (char*)"") {
+  char* args[argc];
+  for (int i = 0; i <= argc; i++) {
+    if (i == argc)
+      args[i] = NULL;
+    else
+      args[i] = (char*)argv[i];
+  }
+  if (argc > 1) {
+    pid processID = fork();
+
+    if (processID < 0) {
+      perror("Fork failed!\n");
+      exit(1);
+
+
+    } else if (processID == 0) {
+      if (string(args[argc - 2]) == "&" || string(args[0]) == "cd") {
+        exit(0);
+      } else {
+        if (string(args[0]) == "log") {
+          const char* log[] = {"vi", "shell.log", NULL};
+          execvp(log[0], (char**)log);
+        } else
+          execvp(args[0], args);
+      }
+    } else {
+      if (string(args[0]) == "cd") {
+        cd(argc, args, cwd);
+      } else if (string(args[argc - 2]) == "&") {
+        args[argc - 2] = NULL;
+        dispatcher(argc - 1, args);
+        signal(SIGCHLD, terminator);
+      }
+    }
+  }
+}
+#endif
+
+
+
+
+
+//---Terminator.hpp:---//
+
+#ifndef TERMINATOR
+#define TERMINATOR
+#include <sys/wait.h>
+#include <time.h>
+#include <unistd.h>
+
+#include <iostream>
+
+using namespace std;
+typedef pid_t pid;
+
+void terminator(pid sigPid) {
+  int status;
+  pid processPid;
+  time_t localTime = time(NULL);
+  FILE *logFile;
+
+
+  switch (sigPid) {
+    case SIGCHLD:
+      logFile = fopen("./shell.log", "a+");
+      while ((processPid = waitpid(-1, &status, WNOHANG)) > 0) {
+        fprintf(logFile, "%s\tChild process was terminated\n", asctime(localtime(&localTime)));
+      }
+      fclose(logFile);
+      break;
+
+    case SIGQUIT:
+      cout << "Terminating..." << endl;
+      exit(0);
+      break;
+
+    default:
+      cout << sigPid << endl;
+      break;
+  }
+}
+#endif
