@@ -1,0 +1,37 @@
+0 2: running 6: ready 
+1 0: ready 2: running 3: ready 6: ready 7: ready 
+2 0: ready 1: ready 2: ready 3: ready 4: ready 5: ready 6: running 7: ready 
+3 0: ready 1: ready 2: ready 3: ready 4: ready 5: ready 6: running 7: ready 
+4 0: running 1: ready 2: ready 3: ready 4: ready 5: ready 6: blocked 7: ready 
+5 0: blocked 1: ready 2: ready 3: running 4: ready 5: ready 6: blocked 7: ready 
+6 0: blocked 1: ready 2: ready 3: blocked 4: ready 5: ready 6: blocked 7: running 
+7 0: blocked 1: ready 2: ready 3: blocked 4: ready 5: ready 6: ready 7: running 
+8 0: blocked 1: running 2: ready 3: ready 4: ready 5: ready 6: ready 7: blocked 
+9 0: ready 1: running 2: ready 3: ready 4: ready 5: ready 6: ready 7: blocked 
+10 0: ready 1: blocked 2: running 3: ready 4: ready 5: ready 6: ready 7: blocked 
+11 0: ready 1: blocked 2: running 3: ready 4: ready 5: ready 6: ready 7: ready 
+12 0: ready 1: blocked 2: ready 3: ready 4: running 5: ready 6: ready 7: ready 
+13 0: ready 1: blocked 2: ready 3: ready 4: blocked 5: running 6: ready 7: ready 
+14 0: ready 1: ready 2: ready 3: ready 4: blocked 5: running 6: ready 7: ready 
+15 0: ready 1: ready 2: ready 3: ready 4: blocked 5: blocked 6: running 7: ready 
+16 0: ready 1: ready 2: ready 3: running 4: blocked 5: blocked 7: ready 
+17 0: running 1: ready 2: ready 4: ready 5: blocked 7: ready 
+18 1: ready 2: ready 4: ready 5: blocked 7: running 
+19 1: ready 2: running 4: ready 5: ready 
+20 1: running 2: blocked 4: ready 5: ready 
+21 2: blocked 4: running 5: ready 
+22 2: blocked 5: running 
+23 2: blocked 
+24 2: blocked 
+25 2: running 
+
+Finishing Time: 25
+CPU utilization: 92%
+Turnaround time of process 0: 17
+Turnaround time of process 1: 19
+Turnaround time of process 2: 26
+Turnaround time of process 3: 16
+Turnaround time of process 4: 20
+Turnaround time of process 5: 21
+Turnaround time of process 6: 16
+Turnaround time of process 7: 18
